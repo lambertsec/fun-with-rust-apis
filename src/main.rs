@@ -1,6 +1,6 @@
 extern crate actix_web;
 mod service;
-use actix_web::{error, Error, get, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 
@@ -11,7 +11,7 @@ async fn main() -> std::io::Result<()> {
     println!("current folder {}", std::env::current_dir().unwrap().display());
     HttpServer::new(|| {
         App::new().route("/",web::get().to(hello))
-            .service(ageapi)
+            .service(age_api)
             .service(time)
             .service(file_return)
     })
@@ -30,7 +30,7 @@ struct file{
 }
 
 #[get("/age/{year}")]
-async fn ageapi(year: web::Path<String>) -> impl Responder {
+async fn age_api(year: web::Path<String>) -> impl Responder {
     println!("Age request received");
     let string_year :String = year.into_inner();
     HttpResponse::Ok().body(
@@ -39,7 +39,7 @@ async fn ageapi(year: web::Path<String>) -> impl Responder {
 
 #[post("/time")]
 async fn time() -> impl Responder {
-    HttpResponse::Ok().body(service::get_time().await)
+    HttpResponse::Ok().body(service::get_time())
 }
 
 #[post("/file")]
@@ -55,3 +55,5 @@ async fn file_return(mut payload: web::Payload) -> impl Responder {
     let obj = serde_json::from_slice::<file>(&body)?;
     Ok(HttpResponse::Ok().json(service::read_file(obj.file_name)))
 }
+
+
